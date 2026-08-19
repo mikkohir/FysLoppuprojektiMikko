@@ -37,7 +37,7 @@ gdf = pd.read_csv("Location.csv")
 
 # Parametrit
 
-f = df['Linear Acceleration x (m/s^2)']
+f = df['Linear Acceleration x (m/s^2)'] 
 t = df['Time (s)']
 T = df['Time (s)'].max()
 n = len(t)
@@ -74,7 +74,7 @@ st.subheader("Tulokset")
 jaksot = 0
 
 for i in range(n-1):
-    if filtered_signal[i] * filtered_signal[i+1] < 0:
+    if filtered_signal[i] / filtered_signal[i+1] < 0:
         jaksot += 1
 
 askeleet = jaksot / 2
@@ -111,7 +111,7 @@ for i in range(len(gdf)-1):
 aika = np.sum(aikaEro) 
 kokonaisMatka = np.sum(matka)
 keskiNopeus = np.divide(kokonaisMatka * 1000, aika)
-askelPituus = np.divide(kokonaisMatka * 1000, steps)
+askelPituus = np.divide(kokonaisMatka * 1000, askeleet)
 
 
 st.write("Kokonaismatka :", round(kokonaisMatka, 2),"km")
