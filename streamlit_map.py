@@ -1,7 +1,7 @@
-import streamlit as st
-import pandas as pd # datan tuonti, käsittely ja tallennus
-import numpy as np # matemaattiset tsydeemit - käy läpi teoriatunnit uudelleen
-import folium # ja tätä visualisointiin matplotlibin sijaan!
+import streamlit as st # Kirjastojen tuonti
+import pandas as pd 
+import numpy as np 
+import folium 
 from scipy.signal import butter,filtfilt
 from streamlit_folium import st_folium
 from math import radians, cos, sin, asin, sqrt
@@ -35,18 +35,18 @@ def haversine(lon1, lat1, lon2, lat2):
 df = pd.read_csv("Linear Acceleration.csv")
 gdf = pd.read_csv("Location.csv")
 
-# Parametrit
+# Luodaan parametrejä suodatukseen (myös osittain Fourieria varten)
 
-f = df['Linear Acceleration x (m/s^2)'] 
-t = df['Time (s)']
-T = df['Time (s)'].max()
-n = len(t)
-fs = n/T
-nyq = fs/2
-order = 3
-cutoff = 1/0.5
+f = df['Linear Acceleration x (m/s^2)'] # Kiihtyvyyden x-komponentti
+t = df['Time (s)'] # Aika
+T = df['Time (s)'].max() # Datan pituus ajalle
+n = len(t) # Datapisteiden lukumäärä ajalle
+fs = n/T # Näytteenottotaajuus
+nyq = fs/2 # Nyqvist
+order = 3 # Kertaluku
+cutoff = 1/0.5 # Cutoff-taajuus
 
-# Suodatin
+# Suodatetaan signaali
 
 df['Suodatettu a_x (m/s^2)'] = butter_lowpass_filter(f, cutoff, fs, nyq, order)
 filtered_signal = df['Suodatettu a_x (m/s^2)']
@@ -84,18 +84,18 @@ st.write("Askelten määrä:", round(askeleet))
 
 # Fourier-analyysi, ja askelten määrä Fourier-muunnoksen perusteella
 
-N = len(f)
+N = len(f) # Datapisteiden määrä (x-komponentti)
 fourier = np.fft.fft(f,N) # Fourier
 psd = fourier*np.conj(fourier)/N # Tehospektri
 dt = t[1]-t[0] # Näytteenottoväli
-freq = np.fft.fftfreq(N,dt)
-L = np.arange(1,int(N/2))
-f_max = freq[L][psd[L] == np.max(psd[L])][0] 
+freq = np.fft.fftfreq(N,dt) # Taajuudet
+L = np.arange(1,int(N/2)) # Rajataan negatiiviset taajuudet ja nollataajuudet
+f_max = freq[L][psd[L] == np.max(psd[L])][0] # Taajuuden arvo tehon saadessa maksimin
 
 
-askelmäärä = np.max(t)*f_max
+askelMäärä = np.max(t)*f_max
 
-st.write("Askelten määrä fourier-muunnoksella: ", round(askelmäärä))
+st.write("Askelten määrä fourier-muunnoksella: ", round(askelMäärä))
 
 
 # Kokonaismatka, keskinopeus sekä askelpituus
@@ -103,15 +103,15 @@ st.write("Askelten määrä fourier-muunnoksella: ", round(askelmäärä))
 matka = np.zeros(len(gdf)) 
 aikaEro = np.zeros(len(gdf)) 
 
-
+# Lasketaan matka pisteiden välillä, sekä ajan ero pisteiden välillä
 for i in range(len(gdf)-1):
     matka[i] = haversine(gdf['Longitude (°)'][i],gdf['Latitude (°)'][i],gdf['Longitude (°)'][i+1],gdf['Latitude (°)'][i+1])
     aikaEro[i] = gdf['Time (s)'][i+1] - gdf['Time (s)'][i]
 
-aika = np.sum(aikaEro) 
-kokonaisMatka = np.sum(matka)
-keskiNopeus = np.divide(kokonaisMatka * 1000, aika)
-askelPituus = np.divide(kokonaisMatka * 1000, askeleet)
+aika = np.sum(aikaEro) # Matkaan käytetty aika
+kokonaisMatka = np.sum(matka) # Matka kokonaisuudessaan
+keskiNopeus = np.divide(kokonaisMatka * 1000, aika) # Selvitetään keskinopeus jakamalla matka ajan kanssa, muunnetaan metreiksi
+askelPituus = np.divide(kokonaisMatka * 1000, askeleet) # Selvitetään askelpituus jakamalla matka askeiden kanssa, muunnetaan metreiksi
 
 
 st.write("Kokonaismatka :", round(kokonaisMatka, 2),"km")
@@ -131,7 +131,7 @@ st.line_chart(chart_data, x = 'freq', y = 'psd' , y_label = 'Teho',x_label = 'Ta
 
 start_lat = gdf['Latitude (°)'].mean()
 start_long = gdf['Longitude (°)'].mean()
-map = folium.Map(location = [start_lat,start_long], zoom_start = 23)
+map = folium.Map(location = [start_lat,start_long], zoom_start = 23) # Lyhyen matkan vuoksi laitetaan karttakuva alustavasti lähelle
 
 folium.PolyLine(gdf[['Latitude (°)','Longitude (°)']], color = 'red', weight = 4, opacity = 1).add_to(map)
 
