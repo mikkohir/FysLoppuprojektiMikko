@@ -9,9 +9,12 @@ from math import radians, cos, sin, asin, sqrt
 
 
 
+
+
 st.title("Päivän kävelymatka")
 
 # Funktio suodatukseen, käytetään alipäästösuodatinta
+@st.cache_data
 def butter_lowpass_filter(data, cutoff, fs, nyq, order):
     normal_cutoff = cutoff / nyq
 
@@ -31,15 +34,20 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 # Luetaan .csv-tiedostot
+@st.cache_data
+def read_data():
+    df = pd.read_csv("Linear Acceleration.csv")
+    gdf = pd.read_csv("Location.csv")
+    return df, gdf
 
-df = pd.read_csv("Linear Acceleration.csv")
-gdf = pd.read_csv("Location.csv")
+df, gdf = read_data()
+
 
 # Luodaan parametrejä suodatukseen (myös osittain Fourieria varten)
 
 f = df['Linear Acceleration x (m/s^2)'] # Kiihtyvyyden x-komponentti
 t = df['Time (s)'] # Aika
-T = df['Time (s)'].max() # Datan pituus ajalle
+T = np.max(t) # Datan pituus ajalle
 n = len(t) # Datapisteiden lukumäärä ajalle
 fs = n/T # Näytteenottotaajuus
 nyq = fs/2 # Nyqvist
@@ -57,6 +65,8 @@ st.title("Kiihtyvyysdata")
 # Suodatetun kiihtyvyysdatan kuvaaja
 
 st.subheader("Suodatettu kiihtyvyysdata, x-komponentti")
+
+
 
 df = df.rename(columns={"Time (s)": "Aika (s)"})
 st.line_chart(
@@ -122,7 +132,6 @@ st.write("Askelen pituus :", round(askelPituus,1),"m")
 # Tehospektri
 
 st.title("Tehospektri")
-
 chart_data = pd.DataFrame(np.transpose(np.array([freq[L],psd[L].real])), columns=["freq", "psd"])
 st.line_chart(chart_data, x = 'freq', y = 'psd' , y_label = 'Teho',x_label = 'Taajuus (Hz)')
 
