@@ -34,10 +34,13 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 # Luetaan .csv-tiedostot
+aUrl = "https://raw.githubusercontent.com/mikkohir/FysLoppuprojektiMikko/refs/heads/main/Linear%20Acceleration.csv"
+gUrl = "https://raw.githubusercontent.com/mikkohir/FysLoppuprojektiMikko/refs/heads/main/Location.csv"
+
 @st.cache_data
 def read_data():
-    df = pd.read_csv("Linear Acceleration.csv")
-    gdf = pd.read_csv("Location.csv")
+    df = pd.read_csv(aUrl)
+    gdf = pd.read_csv(gUrl)
     return df, gdf
 
 df, gdf = read_data()
